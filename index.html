@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neelam, I Love You!</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff4e50 0%, #f9d423 100%);
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            color: #2d1036;
+            position: relative;
+        }
+        canvas#particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .heart {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #ff4040;
+            transform: rotate(-45deg);
+            opacity: 0.9;
+            filter: drop-shadow(0 0 10px #ff4040);
+        }
+        .heart::before,
+        .heart::after {
+            content: '';
+            width: 30px;
+            height: 30px;
+            background: #ff4040;
+            border-radius: 50%;
+            position: absolute;
+        }
+        .heart::before {
+            top: -15px;
+            left: 0;
+        }
+        .heart::after {
+            left: 15px;
+            top: 0;
+        }
+        #header-text {
+            font-family: 'Georgia', serif;
+            animation: colorCycle 3s infinite alternate;
+            position: relative;
+            font-size: 2.5rem;
+            line-height: 1.2;
+        }
+        @keyframes colorCycle {
+            0% { color: #ff69b4; text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493; }
+            50% { color: #ffd700; text-shadow: 0 0 10px #ffd700, 0 0 20px #b8860b; }
+            100% { color: #ffffff; text-shadow: 0 0 10px #ffffff, 0 0 20px #ff69b4; }
+        }
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #pin-section, #main-content {
+            transition: opacity 0.5s ease;
+        }
+        .hidden { display: none; }
+        .typewriter {
+            overflow: hidden;
+            border-right: 0.15em solid #ff4040;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #ff4040; }
+        }
+        #rose {
+            font-size: 80px;
+            color: #ff4040;
+            filter: drop-shadow(0 0 10px #ff69b4);
+            margin: 20px auto;
+            animation: swayRose 2s ease-in-out infinite;
+        }
+        @keyframes swayRose {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(0deg); }
+        }
+        #love-letter {
+            width: 100px;
+            height: 80px;
+            background: #fff;
+            border: 2px solid #ff4040;
+            position: relative;
+            margin: 20px auto;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+        #love-letter.open {
+            transform: rotateY(180deg);
+        }
+        #love-letter::before {
+            content: '💌';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+        }
+        #love-letter::after {
+            content: 'I ❤️ U';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateY(180deg);
+            font-size: 24px;
+            color: #ff4040;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        #love-letter.open::after {
+            opacity: 1;
+        }
+        .social-icons {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .social-icons img {
+            width: 40px;
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+        .social-icons img:hover {
+            transform: scale(1.2);
+        }
+        #rubi-photo {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border: 8px solid #ffd700;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7), 0 0 40px rgba(255, 105, 180, 0.5);
+            margin: 20px auto;
+        }
+        #praise-text {
+            font-style: italic;
+            color: #ff4040;
+            text-shadow: 0 0 5px #ff69b4;
+        }
+        @media (max-width: 640px) {
+            #header-text {
+                font-size: 1.8rem;
+            }
+            #rubi-photo {
+                width: 150px;
+                height: 150px;
+            }
+            #rose {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-center">
+    <!-- Particle Canvas for Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Pin Input Section -->
+    <div id="pin-section" class="container max-w-md mx-auto p-8 bg-white rounded-xl shadow-2xl z-10">
+        <h2 id="pin-header" class="text-3xl font-bold text-pink-600 mb-6">Neelam, Unlock My Heart! 💖</h2>
+        <div class="mb-4">
+            <button onclick="setLanguage('en')" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 mx-2">English</button>
+            <button onclick="setLanguage('hi')" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 mx-2">हिंदी</button>
+        </div>
+        <input type="text" id="pin-input" class="p-3 border-2 border-pink-300 rounded-lg w-full mb-4 focus:outline-none focus:border-pink-500" placeholder="Enter PIN (Hint: 143)">
+        <button onclick="checkPin()" id="pin-button" class="bg-pink-600 text-white px-8 py-3 rounded-full hover:bg-pink-700 transition duration-300">Open the Magic</button>
+        <p id="pin-error" class="text-red-500 mt-3 hidden">Oops! Wrong PIN. Try 143!</p>
+    </div>
+
+    <!-- Main Content (Hidden Initially) -->
+    <div id="main-content" class="hidden z-10">
+        <h1 id="header-text" class="text-5xl md:text-7xl font-bold mb-10"></h1>
+        <div id="love-letter" class="love-letter"></div>
+        <div class="container max-w-3xl mx-auto p-8 bg-white rounded-xl shadow-2xl">
+            <p id="message1" class="text-lg md:text-xl text-gray-700 mb-6 typewriter"></p>
+            <p id="message2" class="text-lg md:text-xl text-gray-700 mb-6 hidden"></p>
+            <p id="message3" class="text-lg md:text-xl text-gray-700 mb-8 hidden"></p>
+            <div id="rose">🌹</div>
+            <img id="rubi-photo" src="image/image.jpeg" alt="Neelam's Photo">
+            <p class="text-sm text-gray-600 mt-2">This is not a real image; it is an AI-generated image.</p>
+            <p id="praise-text" class="text-lg md:text-xl mb-6"></p>
+            <p id="proposal-question" class="text-2xl md:text-3xl font-bold text-pink-600 mb-8"></p>
+            <div class="button-container">
+                <button id="propose-btn" class="bg-red-500 text-white px-10 py-4 rounded-full hover:bg-red-600 transition duration-300 text-lg"></button>
+            </div>
+            <div class="social-icons">
+                <p id="social-prompt" class="text-lg text-gray-700 mb-4"></p>
+                <a href="https://wa.me/+919631550157" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" title="Reply on WhatsApp">
+                </a>
+                <a href="https://www.instagram.com/super_nov_aneers" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" title="Reply on Instagram">
+                </a>
+            </div>
+        </div>
+
+        <footer id="footer-text" class="mt-10 text-gray-600 text-sm"></footer>
+
+        <!-- Background Music -->
+        <audio id="background-music" loop>
+            <source src="https://www.bensound.com/bensound-music/bensound-sweet.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+
+        // Language Data
+        const content = {
+            en: {
+                pinHeader: "Neelam, Unlock My Heart! 💖",
+                pinPlaceholder: "Enter PIN (Hint: 143)",
+                pinButton: "Open the Magic",
+                pinError: "Oops! Wrong PIN. Try 143!",
+                header: "Neelam, You Are My Everything!",
+                message1: "Neelam, from the moment I saw you, my heart knew you were special. Your smile lights up my world like a thousand stars.",
+                message2: "Your kindness, your laughter, your beauty – every little thing about you makes my heart skip a beat.",
+                message3: "I want to hold your hand through every sunrise and sunset, to love you and make you smile every single day.",
+                praiseText: "Neelam, your beauty is like a sunrise, brightening my world every day!",
+                proposalQuestion: "Neelam, Will You Be My Girlfriend?",
+                proposeButton: "Will You Be My Girlfriend? 💍",
+                socialPrompt: "Neelam, please reply to me on WhatsApp or Instagram!",
+                footer: "Forever Yours, Rahul ❤️"
+            },
+            hi: {
+                pinHeader: "नीलम, मेरे दिल को खोलो! 💖",
+                pinPlaceholder: "पिन डालें (संकेत: 143)",
+                pinButton: "जादू खोलें",
+                pinError: "अरे! गलत पिन। 143 आजमाएं!",
+                header: "नीलम, तुम मेरी सब कुछ हो!",
+                message1: "नीलम, जिस पल मैंने तुम्हें देखा, मेरे दिल को पता था कि तुम खास हो। तुम्हारी मुस्कान मेरी दुनिया को हज़ार सितारों की तरह रोशन करती है।",
+                message2: "तुम्हारी दयालुता, तुम्हारी हंसी, तुम्हारी खूबसूरती – तुम्हारी हर छोटी बात मेरे दिल को धड़कने पर मजबूर करती है।",
+                message3: "मैं हर सूर्योदय और सूर्यास्त में तुम्हारा हाथ थामना चाहता हूँ, तुमसे प्यार करना और हर दिन तुम्हें मुस्कुराने का कारण बनना चाहता हूँ।",
+                praiseText: "नीलम, तुम्हारी खूबसूरती सूर्योदय की तरह है, जो मेरी दुनिया को हर दिन रोशन करती है!",
+                proposalQuestion: "नीलम, क्या तुम मेरी गर्लफ्रेंड बनोगी?",
+                proposeButton: "क्या तुम मेरी गर्लफ्रेंड बनोगी? 💍",
+                socialPrompt: "नीलम, कृपया मुझे व्हाट्सएप या इंस्टाग्राम पर जवाब दें!",
+                footer: "हमेशा तुम्हारा, राहुल ❤️"
+            }
+        };
+
+        let selectedLanguage = 'en'; // Default language
+
+        // Set Language
+        function setLanguage(lang) {
+            selectedLanguage = lang;
+            document.getElementById('pin-header').innerText = content[lang].pinHeader;
+            document.getElementById('pin-input').placeholder = content[lang].pinPlaceholder;
+            document.getElementById('pin-button').innerText = content[lang].pinButton;
+            document.getElementById('pin-error').innerText = content[lang].pinError;
+        }
+
+        // Pin Check Functionality
+        function checkPin() {
+            const pinInput = document.getElementById('pin-input').value;
+            const correctPin = '143';
+            const pinSection = document.getElementById('pin-section');
+            const mainContent = document.getElementById('main-content');
+            const pinError = document.getElementById('pin-error');
+            const loveLetter = document.getElementById('love-letter');
+
+            if (pinInput === correctPin) {
+                pinSection.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                updateContent();
+                startAnimations();
+                triggerConfetti();
+                playMusic();
+                startTypewriter();
+                setTimeout(() => {
+                    loveLetter.classList.add('open');
+                }, 1000);
+            } else {
+                pinError.classList.remove('hidden');
+            }
+        }
+
+        // Update Content Based on Language
+        function updateContent() {
+            document.getElementById('header-text').innerText = content[selectedLanguage].header;
+            document.getElementById('praise-text').innerText = content[selectedLanguage].praiseText;
+            document.getElementById('proposal-question').innerText = content[selectedLanguage].proposalQuestion;
+            document.getElementById('propose-btn').innerText = content[selectedLanguage].proposeButton;
+            document.getElementById('social-prompt').innerText = content[selectedLanguage].socialPrompt;
+            document.getElementById('footer-text').innerText = content[selectedLanguage].footer;
+        }
+
+        // GSAP Animations
+        function startAnimations() {
+            if (typeof gsap === 'undefined') {
+                console.error('GSAP library not loaded');
+                return;
+            }
+            gsap.from("#header-text", { duration: 2, y: -100, opacity: 0, ease: "bounce" });
+            gsap.from(".container", { duration: 1.5, scale: 0.7, opacity: 0, delay: 0.5, ease: "power2.out" });
+            gsap.from("#rose", { duration: 1.5, scale: 0, opacity: 0, delay: 1, ease: "elastic" });
+            gsap.from("#love-letter", { duration: 1.5, y: 50, opacity: 0, delay: 0.8, ease: "bounce" });
+            gsap.from("#rubi-photo", { duration: 1.5, scale: 0, opacity: 0, delay: 1.2, ease: "elastic" });
+            gsap.from("#praise-text", { duration: 1, y: 50, opacity: 0, delay: 1.4, ease: "power2.out" });
+            gsap.from("#propose-btn", { duration: 1, y: 50, opacity: 0, delay: 1.6, ease: "elastic" });
+            gsap.from(".social-icons", { duration: 1, y: 50, opacity: 0, delay: 1.8, ease: "elastic" });
+            startSparkle();
+        }
+
+        // Typewriter Effect
+        function startTypewriter() {
+            const messages = [
+                content[selectedLanguage].message1,
+                content[selectedLanguage].message2,
+                content[selectedLanguage].message3
+            ];
+            let messageIndex = 0;
+
+            function typeMessage(elementId, text, callback) {
+                let i = 0;
+                const element = document.getElementById(elementId);
+                element.classList.remove('hidden');
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, 50);
+                    } else {
+                        element.classList.remove('typewriter');
+                        if (callback) callback();
+                    }
+                }
+                type();
+            }
+
+            typeMessage('message1', messages[0], () => {
+                typeMessage('message2', messages[1], () => {
+                    typeMessage('message3', messages[2]);
+                });
+            });
+        }
+
+        // Sparkle Effect for Header
+        function startSparkle() {
+            if (typeof gsap === 'undefined') {
+                console.error('GSAP library not loaded');
+                return;
+            }
+            const header = document.getElementById('header-text');
+            setInterval(() => {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = (header.offsetLeft + Math.random() * header.offsetWidth) + 'px';
+                sparkle.style.top = (header.offsetTop + Math.random() * header.offsetHeight) + 'px';
+                sparkle.style.background = Math.random() > 0.5 ? '#ffd700' : '#ff69b4';
+                document.body.appendChild(sparkle);
+
+                gsap.to(sparkle, {
+                    duration: 1,
+                    opacity: 1,
+                    scale: 1.5,
+                    ease: "power1.out",
+                    onComplete: () => {
+                        gsap.to(sparkle, {
+                            duration: 0.5,
+                            opacity: 0,
+                            onComplete: () => sparkle.remove()
+                        });
+                    }
+                });
+            }, 300);
+        }
+
+        // Confetti and Fireworks Effect
+        function triggerConfetti() {
+            if (typeof confetti === 'undefined') {
+                console.error('Confetti library not loaded');
+                return;
+            }
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#ff4040', '#ff69b4', '#ffd700', '#ffffff']
+            });
+            setTimeout(() => {
+                confetti({
+                    particleCount: 100,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff4040', '#ffffff']
+                });
+                confetti({
+                    particleCount: 100,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff69b4', '#ffd700']
+                });
+            }, 1000);
+        }
+
+        // Floating and Glowing Hearts Animation
+        function createHearts() {
+            if (typeof gsap === 'undefined') {
+                console.error('GSAP library not loaded');
+                return;
+            }
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement("div");
+                heart.className = "heart";
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.top = Math.random() * 100 + "vh";
+                document.body.appendChild(heart);
+
+                gsap.to(heart, {
+                    duration: 4,
+                    y: -1200,
+                    opacity: 0,
+                    scale: 1.5,
+                    ease: "power1.in",
+                    delay: Math.random() * 2,
+                    onComplete: () => heart.remove()
+                });
+            }
+        }
+
+        // Play Background Music
+        function playMusic() {
+            const music = document.getElementById('background-music');
+            music.play().catch(error => console.log('Audio play failed:', error));
+        }
+
+        // Propose Button Click
+        document.getElementById("propose-btn").addEventListener("click", () => {
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.5 },
+                    colors: ['#ff4040', '#ff69b4', '#ffffff', '#ffd700']
+                });
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 150,
+                        angle: 60,
+                        spread: 70,
+                        origin: { x: 0 },
+                        colors: ['#ff4040', '#ffffff']
+                    });
+                    confetti({
+                        particleCount: 150,
+                        angle: 120,
+                        spread: 70,
+                        origin: { x: 1 },
+                        colors: ['#ff69b4', '#ffd700']
+                    });
+                }, 500);
+            }
+            createHearts();
+            gsap.to(".container", { duration: 1, scale: 1.2, yoyo: true, repeat: 1, ease: "power2.inOut" });
+        });
+
+        // Initialize Particles and Subtle Confetti on Load
+        window.onload = () => {
+            initParticles();
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 60,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#ff69b4', '#ffd700', '#ff4040']
+                });
+            } else {
+                console.error('Confetti library not loaded');
+            }
+        };
+
+        // Particle Background Animation
+        function initParticles() {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 5 + 2,
+                    vx: Math.random() * 2 - 1,
+                    vy: Math.random() * 2 - 1
+                });
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 105, 180, 0.7)';
+                    ctx.fill();
+                });
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        }
+    </script>
+</body>
+</html>
